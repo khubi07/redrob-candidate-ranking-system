@@ -1,5 +1,8 @@
 Observation 1: Skills Distribution
 
+Skills may not align with actual work experience.
+Implication:
+Skills should not be trusted in isolation.
 seems realistic
 Average = 9.6
 Median  = 9
@@ -8,6 +11,12 @@ Max     = 23
 
 Observation 2: Career History
 
+Job titles frequently mismatch career descriptions.
+Examples:
+Mechanical Engineer → Business Analyst description
+Civil Engineer → Brand Designer description
+Implication:
+Titles alone are unreliable ranking signals.
 Average = 3
 Median  = 3
 Max     = 9
@@ -40,3 +49,53 @@ Implication:
 - Skill frequencies alone are unlikely to be strong ranking signals.
 - Exact keyword matching may be unreliable.
 - Career descriptions and behavioral signals may carry more useful information than raw skill lists.
+
+Observation #7
+
+Randomly sampled descriptions are realistic and profession-specific.
+Examples:
+Customer Support
+Sales
+QA
+Android Development
+Brand Design
+
+Implication:
+The dataset contains diverse professions and many poor fits for the target role.
+
+Observation #8
+
+Relevant AI and search-related terminology exists in the dataset.
+
+Keyword frequencies:
+- AI: 178,930
+- LLM: 50,478
+- ML: 31,364
+- Search: 25,245
+- Ranking: 623
+- Recommendation: 445
+- Embedding: 164
+- Retrieval: 93
+
+Implication:
+Generic AI terminology is common and therefore weak as a ranking signal.
+Retrieval, ranking, recommendation, and embedding terminology are comparatively rare and may provide stronger evidence of fit for the target role.
+
+Observation #9
+
+The organizers intentionally permit:
+- Semantic Search
+- Vector Embeddings
+- Hybrid Retrieval
+- LLM Ranking
+
+However, challenge constraints remain:
+- CPU only
+- No hosted APIs
+- 100k candidates
+- 5 minute ranking budget
+
+Implication:
+Architecture decisions should be driven by latency and reproducibility, not by the availability of LLM-based approaches.
+
+A retrieval → ranking pipeline remains the most practical design.

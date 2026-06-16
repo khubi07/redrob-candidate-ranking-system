@@ -29,3 +29,7 @@ outputs/
 
 # Large dataset
 data/candidates.jsonl
+
+#research files
+research.md
+research2.md
