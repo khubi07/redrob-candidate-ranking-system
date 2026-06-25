@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Dict, Any
+from candidate_representation import create_retrieval_document
 
 
 @dataclass
@@ -54,8 +55,14 @@ def create_retrieval_document(candidate_json: dict) -> str:
     sections = []
 
     profile = candidate_json.get("profile", {})
-
     headline = profile.get("headline", "")
+    summary = profile.get("summary", "")
+    company = exp.get("company", "") # type: ignore
+
+    sections.append(
+        f"Company: {company}"
+    )
+    sections.append(f"Summary: {summary}")
     sections.append(f"Headline: {headline}")
 
     skills = candidate_json.get("skills", [])
