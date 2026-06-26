@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Dict
+from typing import List, Dict, Any
 
 
 @dataclass
@@ -12,7 +12,9 @@ class JobDescription:
     semantic_query: str
 
     # Core requirements
-    requirements: List[str]
+    requirements: Dict[str, float]
+
+    
 
     # Nice-to-have requirements
     preferences: List[str]
@@ -29,25 +31,29 @@ class JobDescription:
     # Instructions hidden inside the JD
     ranking_hints: List[str]
 
+    requirement_embeddings: Any = None
+
 
 def build_job_description(jd_text: str) -> JobDescription:
 
     # Hard requirements from JD
-    requirements = [
-        "python",
-        "embeddings",
-        "retrieval systems",
-        "ranking systems",
-        "llms",
-        "fine-tuning",
-        "bm25",
-        "vector databases",
-        "ndcg",
-        "mrr",
-        "map",
-        "recommendation systems",
-        "search systems"
-    ]
+    requirements = {
+        "retrieval systems": 3.0,
+        "ranking systems": 3.0,
+        "recommendation systems": 3.0,
+        "search systems": 3.0,
+
+        "embeddings": 2.5,
+        "vector databases": 2.5,
+
+        "python": 1.5,
+        "llms": 1.5,
+        "fine-tuning": 1.0,
+        "bm25": 1.0,
+        "ndcg": 1.0,
+        "mrr": 1.0,
+        "map": 1.0
+    }
 
     # Nice-to-have skills
     preferences = [
@@ -99,7 +105,7 @@ def build_job_description(jd_text: str) -> JobDescription:
 
     # Compact query used for semantic retrieval
     semantic_query = " ".join(
-        requirements + preferences
+        list(requirements.keys()) + preferences
     )
 
     return JobDescription(

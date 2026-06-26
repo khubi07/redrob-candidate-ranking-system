@@ -9,12 +9,9 @@ import numpy as np
 
 class Retriever:
 
-    def __init__(self):
+    def __init__(self, embedding_model):
 
-        # Embedding model (loaded only once)
-        self.embedding_model = SentenceTransformer(
-            "sentence-transformers/all-MiniLM-L6-v2"
-        )
+        self.embedding_model = embedding_model
 
         # BM25 index
         self.bm25 = None

@@ -10,6 +10,11 @@ class Experience:
     industry: str
     company_size: str
     description: str
+    # Used for evidence matching
+    evidence_text: str = ""
+
+    # Filled later by Ranker
+    embedding: Any = None
 
 @dataclass
 class Skill:
@@ -109,15 +114,18 @@ def extract_experiences(candidate_json):
 
     for exp in candidate_json.get("career_history", []):
 
+        title = exp.get("title", "")
+        description = exp.get("description", "")
         experiences.append(
             Experience(
                 company=exp.get("company", ""),
-                title=exp.get("title", ""),
+                title=title,
                 duration_months=exp.get("duration_months", 0),
                 is_current=exp.get("is_current", False),
                 industry=exp.get("industry", ""),
                 company_size=exp.get("company_size", ""),
-                description=exp.get("description", "")
+                description=description,
+                evidence_text=f"{title}. {description}",
             )
         )
 
