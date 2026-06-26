@@ -132,7 +132,7 @@ def extract_experiences(candidate_json):
     return experiences
 
 def create_metadata(candidate_json: dict):
-
+    profile = candidate_json.get("profile", {})
     return {
 
         "num_skills":
@@ -142,7 +142,12 @@ def create_metadata(candidate_json: dict):
             len(candidate_json.get("career_history", [])),
 
         "num_education":
-            len(candidate_json.get("education", []))
+            len(candidate_json.get("education", [])),
+
+         "years_of_experience": profile.get(
+            "years_of_experience",
+            0.0
+        ),
     }
 
 def build_candidate(candidate_json: dict) -> Candidate:
