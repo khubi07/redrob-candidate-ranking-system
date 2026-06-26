@@ -289,9 +289,10 @@ class Ranker:
                 + EXPERIENCE_WEIGHT * experience_score
                 + BEHAVIOR_WEIGHT * behavior_score
             )
-        
+         
             rankings.append(
                 {
+                    "candidate": candidate,
                     "candidate_id": candidate.candidate_id,
                     "final_score": final_score,
                     "evidence_score": evidence_score,
