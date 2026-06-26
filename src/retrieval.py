@@ -1,19 +1,28 @@
-
+# BM25 for keyword-based retrieval
 from rank_bm25 import BM25Okapi
+
+# Sentence embeddings for semantic retrieval
 from sentence_transformers import SentenceTransformer
+
 import numpy as np
+
 
 class Retriever:
 
     def __init__(self):
 
-        # Small and fast embedding model
+        # Embedding model (loaded only once)
         self.embedding_model = SentenceTransformer(
             "sentence-transformers/all-MiniLM-L6-v2"
         )
 
+        # BM25 index
         self.bm25 = None
+
+        # Candidate IDs in index order
         self.candidate_ids = []
+
+        # Embedding matrix
         self.candidate_embeddings = None
 
     def build_bm25_index(self, candidates):

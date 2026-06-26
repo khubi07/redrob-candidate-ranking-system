@@ -1,7 +1,5 @@
 from dataclasses import dataclass
 from typing import List, Dict, Any
-from candidate_representation import create_retrieval_document
-
 
 @dataclass
 class Experience:
@@ -57,11 +55,8 @@ def create_retrieval_document(candidate_json: dict) -> str:
     profile = candidate_json.get("profile", {})
     headline = profile.get("headline", "")
     summary = profile.get("summary", "")
-    company = exp.get("company", "") # type: ignore
-
-    sections.append(
-        f"Company: {company}"
-    )
+    
+    
     sections.append(f"Summary: {summary}")
     sections.append(f"Headline: {headline}")
 
@@ -91,9 +86,13 @@ def create_retrieval_document(candidate_json: dict) -> str:
 
     for exp in experiences:
 
+        company = exp.get("company", "") # type: ignore
         title = exp.get("title", "")
         description = exp.get("description", "")
 
+        sections.append(
+            f"Company: {company}"
+        )
         sections.append(
             f"Experience Title: {title}"
         )
