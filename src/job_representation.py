@@ -8,6 +8,9 @@ class JobDescription:
     # Full JD text for retrieval
     document: str
 
+    # Compact query used by embedding retrieval
+    semantic_query: str
+
     # Core requirements
     requirements: List[str]
 
@@ -94,8 +97,14 @@ def build_job_description(jd_text: str) -> JobDescription:
         "active_job_seeker_bonus"
     ]
 
+    # Compact query used for semantic retrieval
+    semantic_query = " ".join(
+        requirements + preferences
+    )
+
     return JobDescription(
         document=jd_text,
+        semantic_query=semantic_query,
         requirements=requirements,
         preferences=preferences,
         constraints=constraints,
