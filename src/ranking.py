@@ -91,6 +91,24 @@ class Ranker:
                 )
             )
 
+    def build_evidence_embeddings(
+        self,
+        candidates
+    ):
+        """
+        Build embeddings from the
+        evidence document only.
+        """
+
+        for candidate in candidates:
+
+            candidate.evidence_document_embedding = (
+                self.embedding_model.encode(
+                    candidate.evidence_document,
+                    convert_to_tensor=True
+                )
+            )
+
     def _score_evidence(
         self,
         job,
@@ -117,6 +135,64 @@ class Ranker:
             document_score = util.cos_sim(
                     req_embedding,
                     candidate.document_embedding
+                ).item()
+            
+            for exp in candidate.experiences:
+
+                score = util.cos_sim(
+                    req_embedding,
+                    exp.evidence_embedding
+                ).item()
+
+                if score > best_score:
+                    best_score = score
+
+            best_score = max(
+                    best_score,
+                    document_score    
+                )
+                                  
+            weighted_score += best_score * weight
+            total_weight += weight
+
+            print(
+                f"{requirement:25}"
+                f" Weight={weight:.1f}"
+                f" Best={best_score:.3f}"
+            )
+
+        print(
+            f"\nFinal Evidence Score = "
+            f"{weighted_score / total_weight:.3f}"
+        )
+        return weighted_score / total_weight
+    
+    def _score_evidence_v2(
+        self,
+        job,
+        candidate
+    ):
+        """
+        Score how well a candidate's experiences
+        satisfy the job requirements.
+        """
+
+        weighted_score = 0.0
+        total_weight = 0.0
+
+        # Iterate over each requirement
+        for (requirement, weight), req_embedding in zip(
+            job.requirements.items(),
+            job.requirement_embeddings
+            
+        ):
+            best_score = 0.0
+
+            # Compare against every experience
+
+            document_score = util.cos_sim(
+                    req_embedding,
+                    candidate.evidence_embedding
                 ).item()
             
             for exp in candidate.experiences:
@@ -315,6 +391,71 @@ class Ranker:
 
         for candidate in candidates:    
             evidence_score = self._score_evidence(
+                job,
+                candidate
+            )
+
+            skill_score = self._score_skills(
+                job,
+                candidate
+            )
+
+            experience_score = self._score_experience(
+                job,
+                candidate
+            )
+
+            behavior_score = self._score_behavior(
+                candidate
+            )
+
+            EVIDENCE_WEIGHT = 0.60
+            SKILL_WEIGHT = 0.15
+            EXPERIENCE_WEIGHT = 0.10
+            BEHAVIOR_WEIGHT = 0.15
+
+
+            final_score = (
+                EVIDENCE_WEIGHT * evidence_score
+                + SKILL_WEIGHT * skill_score
+                + EXPERIENCE_WEIGHT * experience_score
+                + BEHAVIOR_WEIGHT * behavior_score
+            )
+            if evidence_score < 0.15:
+                final_score *= 0.70
+         
+            rankings.append(
+                {
+                    "candidate": candidate,
+                    "candidate_id": candidate.candidate_id,
+                    "final_score": final_score,
+                    "evidence_score": evidence_score,
+                    "skill_score": skill_score,
+                    "experience_score": experience_score,
+                    "behavior_score": behavior_score
+                }
+            )     
+
+        rankings.sort(
+            key=lambda ranking: ranking["final_score"],
+            reverse=True
+        )
+        return rankings    
+    
+    def rank_candidates_v2(
+        self,
+        job,
+        candidates
+    ):
+        """
+        Compute final ranking score for
+        every candidate.
+        """
+
+        rankings = []
+
+        for candidate in candidates:    
+            evidence_score = self._score_evidence_v2(
                 job,
                 candidate
             )

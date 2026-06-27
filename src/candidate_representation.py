@@ -38,6 +38,9 @@ class Candidate:
     metadata: Dict[str, Any]
 
     document_embedding: Any = None
+
+    evidence_document_embedding: Any = None
+
 def extract_skills(candidate_json):
 
     skills = []
@@ -110,6 +113,33 @@ def create_retrieval_document(candidate_json: dict) -> str:
 
     return "\n".join(sections)
 
+def create_evidence_document(candidate_json: dict) -> str:
+    """
+    Build a retrieval-friendly document using
+    only evidence from work experience.
+    """
+
+    parts = []
+
+    career_history = candidate_json.get("career_history", [])
+
+    for exp in career_history:
+
+        title = exp.get("title", "")
+        company = exp.get("company", "")
+        description = exp.get("description", "")
+
+        section = f"""
+            Role: {title}
+           
+            Work:
+            {description}
+            """
+
+        parts.append(section.strip())
+
+    return "\n\n".join(parts)
+
 def extract_experiences(candidate_json):
 
     experiences = []
@@ -172,5 +202,8 @@ def build_candidate(candidate_json: dict) -> Candidate:
         candidate_json.get("redrob_signals", {}),
 
         metadata=
-        create_metadata(candidate_json)
+        create_metadata(candidate_json),
+
+        evidence_document_embedding=
+        create_evidence_document(candidate_json),
     )
