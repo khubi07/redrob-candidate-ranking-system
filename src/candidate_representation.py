@@ -36,6 +36,8 @@ class Candidate:
     signals: Dict[str, Any]
 
     metadata: Dict[str, Any]
+
+    document_embedding: Any = None
 def extract_skills(candidate_json):
 
     skills = []

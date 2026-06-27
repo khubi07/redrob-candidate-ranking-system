@@ -31,6 +31,7 @@ keywords in their profile.
 
 from sentence_transformers import util
 import numpy as np
+from aliases import SKILL_ALIASES
 
 class Ranker:
 
@@ -72,6 +73,24 @@ class Ranker:
                     )
                 )
 
+    def build_document_embeddings(
+        self,
+        candidates
+    ):
+        """
+        Precompute embeddings for each
+        candidate retrieval document.
+        """
+
+        for candidate in candidates:
+
+            candidate.document_embedding = (
+                self.embedding_model.encode(
+                    candidate.retrieval_document,
+                    convert_to_tensor=True
+                )
+            )
+
     def _score_evidence(
         self,
         job,
@@ -89,23 +108,45 @@ class Ranker:
         for (requirement, weight), req_embedding in zip(
             job.requirements.items(),
             job.requirement_embeddings
+            
         ):
             best_score = 0.0
 
             # Compare against every experience
+
+            document_score = util.cos_sim(
+                    req_embedding,
+                    candidate.document_embedding
+                ).item()
+            
             for exp in candidate.experiences:
 
                 score = util.cos_sim(
                     req_embedding,
                     exp.evidence_embedding
                 ).item()
-                
+
                 if score > best_score:
                     best_score = score
-           
+
+            best_score = max(
+                    best_score,
+                    document_score    
+                )
+                                  
             weighted_score += best_score * weight
             total_weight += weight
-           
+
+            print(
+                f"{requirement:25}"
+                f" Weight={weight:.1f}"
+                f" Best={best_score:.3f}"
+            )
+
+        print(
+            f"\nFinal Evidence Score = "
+            f"{weighted_score / total_weight:.3f}"
+        )
         return weighted_score / total_weight
     
     def _score_skills(
@@ -128,10 +169,25 @@ class Ranker:
 
         for requirement, weight in job.requirements.items():
 
-            total_weight += weight
+            aliases = SKILL_ALIASES.get(
+                requirement,
+                [requirement]
+            )
 
-            if requirement.lower() in candidate_skills:
+            matched = False
+
+            for skill in candidate_skills:
+                if any(
+                    alias.lower() in skill
+                    for alias in aliases
+                ):
+                    matched = True
+                    break
+
+            if matched:
                 weighted_score += weight
+
+            total_weight += weight
 
         return weighted_score / total_weight
     
@@ -277,10 +333,10 @@ class Ranker:
                 candidate
             )
 
-            EVIDENCE_WEIGHT = 0.50
+            EVIDENCE_WEIGHT = 0.60
             SKILL_WEIGHT = 0.15
-            EXPERIENCE_WEIGHT = 0.15
-            BEHAVIOR_WEIGHT = 0.20
+            EXPERIENCE_WEIGHT = 0.10
+            BEHAVIOR_WEIGHT = 0.15
 
 
             final_score = (
@@ -289,6 +345,8 @@ class Ranker:
                 + EXPERIENCE_WEIGHT * experience_score
                 + BEHAVIOR_WEIGHT * behavior_score
             )
+            if evidence_score < 0.15:
+                final_score *= 0.70
          
             rankings.append(
                 {

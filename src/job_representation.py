@@ -46,13 +46,11 @@ def build_job_description(jd_text: str) -> JobDescription:
         "embeddings": 2.5,
         "vector databases": 2.5,
 
-        "python": 1.5,
+        "python": 2.0,
         "llms": 1.5,
         "fine-tuning": 1.0,
-        "bm25": 1.0,
-        "ndcg": 1.0,
-        "mrr": 1.0,
-        "map": 1.0
+        "bm25": 2.0,
+        
     }
 
     # Nice-to-have skills

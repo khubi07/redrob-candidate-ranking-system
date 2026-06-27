@@ -1,3 +1,6 @@
+from aliases import SKILL_ALIASES
+
+
 class ExplanationGenerator:
 
     def _evidence_reason(
@@ -20,7 +23,15 @@ class ExplanationGenerator:
 
         for requirement in job.requirements:
 
-            if requirement.lower() in experience_text:
+            aliases = SKILL_ALIASES.get(
+                requirement,
+                [requirement]
+            )
+
+            if any(
+                alias in experience_text
+                for alias in aliases
+            ):
                 keywords.append(requirement)
 
         if keywords:
