@@ -41,6 +41,34 @@ class Candidate:
 
     evidence_document_embedding: Any = None
 
+STRONG_VERBS = [
+    "built",
+    "implemented",
+    "designed",
+    "developed",
+    "deployed",
+    "optimized",
+    "trained",
+    "created",
+    "led",
+    "migrated",
+    "engineered",
+    "integrated",
+    "improved",
+    "owned",
+]
+
+WEAK_PHRASES = [
+    "interested in",
+    "looking for",
+    "open to",
+    "excited about",
+    "experimenting with",
+    "learning",
+    "taking online courses",
+    "exploring",
+]
+
 def extract_skills(candidate_json):
 
     skills = []
@@ -62,12 +90,31 @@ def create_retrieval_document(candidate_json: dict) -> str:
 
     sections = []
 
+    parts = []
+
     profile = candidate_json.get("profile", {})
     headline = profile.get("headline", "")
     summary = profile.get("summary", "")
     
     
-    sections.append(f"Summary: {summary}")
+    import re
+
+    summary_sentences = re.split(r'(?<=[.!?])\s+', summary)
+
+    filtered_summary = []
+
+    for sentence in summary_sentences:
+
+        s = sentence.lower()
+
+        if any(p in s for p in WEAK_PHRASES):
+            continue
+
+        filtered_summary.append(sentence)
+
+    parts.append(
+        "Summary: " + " ".join(filtered_summary)
+    )
     sections.append(f"Headline: {headline}")
 
     skills = candidate_json.get("skills", [])
