@@ -121,8 +121,18 @@ class Retriever:
 
         rrf_scores = {}
 
+        embedding_ids = {
+            candidate_id
+            for candidate_id, _ in embedding_results
+        }
+
         # BM25 contribution
         for rank, (candidate_id, _) in enumerate(bm25_results, start=1):
+
+            # Ignore candidates that semantic search
+            # considers completely irrelevant.
+            if candidate_id not in embedding_ids:
+                continue
 
             rrf_scores[candidate_id] = (
                 rrf_scores.get(candidate_id, 0)
