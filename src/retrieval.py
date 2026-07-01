@@ -19,8 +19,24 @@ class Retriever:
         # Candidate IDs in index order
         self.candidate_ids = []
 
-        # Embedding matrix
+        # Candidate embedding matrix
         self.candidate_embeddings = None
+
+        # -----------------------------
+        # Experience-level retrieval
+        # -----------------------------
+
+        # Embedding for every experience
+        self.experience_embeddings = None
+
+        # Candidate ID corresponding to each experience embedding
+        self.experience_candidate_ids = []
+
+        # Text document of each experience
+        self.experience_documents = []
+
+        # Extra info for debugging
+        self.experience_metadata = []
 
     def build_bm25_index(self, candidates):
 
@@ -57,6 +73,108 @@ class Retriever:
             convert_to_numpy=True,
             normalize_embeddings=True
         )
+
+    def build_experience_embedding_index(
+        self,
+        candidates
+    ):
+
+        # Clear previous index
+        self.experience_candidate_ids = []
+        self.experience_documents = []
+        self.experience_metadata = []
+
+        # ----------------------------------
+        # Collect every experience
+        # ----------------------------------
+
+        for candidate in candidates:
+
+            for experience in candidate.experiences:
+
+                # Candidate mapping
+                self.experience_candidate_ids.append(
+                    candidate.candidate_id
+                )
+
+                # Document to embed
+                self.experience_documents.append(
+                    experience.evidence_text
+                )
+
+                # Metadata (for debugging)
+                self.experience_metadata.append(
+                    {
+                        "candidate_id": candidate.candidate_id,
+                        "company": experience.company,
+                        "title": experience.title,
+                        "is_current": experience.is_current
+                    }
+                )
+
+        # ----------------------------------
+        # Generate embeddings
+        # ----------------------------------
+
+        self.experience_embeddings = self.embedding_model.encode(
+            self.experience_documents,
+            show_progress_bar=True,
+            convert_to_numpy=True,
+            normalize_embeddings=True
+        )
+
+        print(f"Indexed {len(self.experience_documents)} experiences.")
+
+    def _experience_embedding_search(
+        self,
+        query,
+        top_k=500
+    ):
+
+        # -----------------------------
+        # Embed the query
+        # -----------------------------
+        query_embedding = self.embedding_model.encode(
+            query,
+            normalize_embeddings=True
+        )
+
+        # -----------------------------
+        # Similarity with ALL experiences
+        # -----------------------------
+        scores = self.experience_embeddings @ query_embedding
+
+        # -----------------------------
+        # Sort experiences
+        # -----------------------------
+        ranked_indices = np.argsort(scores)[::-1][:5000]
+        # -----------------------------
+        # Group by candidate
+        # -----------------------------
+        candidate_scores = {}
+
+        for idx in ranked_indices:
+
+            candidate_id = self.experience_candidate_ids[idx]
+            score = float(scores[idx])
+
+            # Keep BEST experience only
+            if (
+                candidate_id not in candidate_scores
+                or score > candidate_scores[candidate_id]
+            ):
+                candidate_scores[candidate_id] = score
+
+        # -----------------------------
+        # Candidate ranking
+        # -----------------------------
+        results = sorted(
+            candidate_scores.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )
+
+        return results[:top_k]
 
     def _bm25_search(
         self,
