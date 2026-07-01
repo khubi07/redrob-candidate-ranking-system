@@ -69,6 +69,40 @@ WEAK_PHRASES = [
     "exploring",
 ]
 
+JD_RELEVANT_SKILLS = {
+    "retrieval",
+    "ranking",
+    "recommendation",
+    "search",
+
+    "embeddings",
+    "embedding",
+
+    "faiss",
+    "pinecone",
+    "milvus",
+    "weaviate",
+    "vector database",
+    "vector databases",
+
+    "bm25",
+    "rag",
+
+    "llm",
+    "llms",
+    "transformers",
+
+    "fine-tuning",
+    "lora",
+    "qlora",
+    "peft",
+
+    "python",
+
+    "pytorch",
+    "tensorflow"
+}
+
 def extract_skills(candidate_json):
 
     skills = []
@@ -89,56 +123,6 @@ def extract_skills(candidate_json):
 def create_retrieval_document(candidate_json: dict) -> str:
 
     sections = []
-
-    parts = []
-
-    profile = candidate_json.get("profile", {})
-    headline = profile.get("headline", "")
-    summary = profile.get("summary", "")
-    
-    
-    import re
-
-    summary_sentences = re.split(r'(?<=[.!?])\s+', summary)
-
-    filtered_summary = []
-
-    for sentence in summary_sentences:
-
-        s = sentence.lower()
-
-        if any(p in s for p in WEAK_PHRASES):
-            continue
-
-        filtered_summary.append(sentence)
-
-    parts.append(
-        "Summary: " + " ".join(filtered_summary)
-    )
-    sections.append(f"Headline: {headline}")
-
-    skills = candidate_json.get("skills", [])
-
-    skill_names = [
-        skill.get("name", "")
-        for skill in skills
-    ]
-
-    if skill_names:
-        sections.append(
-            "Skills: " + ", ".join(skill_names)
-        )
-
-    education = candidate_json.get("education", [])
-
-    for edu in education:
-        degree = edu.get("degree", "")
-        field = edu.get("field_of_study", "")
-
-        sections.append(
-            f"Education: {degree} {field}"
-        )
-
     experiences = candidate_json.get("career_history", [])
 
     for exp in experiences:
@@ -157,6 +141,34 @@ def create_retrieval_document(candidate_json: dict) -> str:
         sections.append(
             f"Experience Description: {description}"
         )
+
+    profile = candidate_json.get("profile", {})
+    headline = profile.get("headline", "")
+    
+    sections.append(f"Headline: {headline}")
+
+    skills = candidate_json.get("skills", [])
+
+    relevant_skills = []
+
+    for skill in skills:
+
+        name = skill.get("name", "")
+        lower = name.lower()
+
+        if any(
+            keyword in lower
+            for keyword in JD_RELEVANT_SKILLS
+        ):
+            relevant_skills.append(name)
+
+    if relevant_skills:
+        sections.append(
+            "Skills: " + ", ".join(relevant_skills)
+        )
+
+
+    
 
     return "\n".join(sections)
 
