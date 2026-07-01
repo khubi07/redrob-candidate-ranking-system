@@ -6,7 +6,26 @@ from sentence_transformers import SentenceTransformer
 
 import numpy as np
 
+HIGH_PRIORITY_TITLES = {
+    "Search Engineer",
+    "Recommendation Systems Engineer",
+    "Applied ML Engineer",
+    "ML Engineer",
+    "Machine Learning Engineer",
+    "NLP Engineer",
+    "Data Engineer",
+    "Senior Data Engineer",
+}
 
+MEDIUM_PRIORITY_TITLES = {
+    "Backend Engineer",
+    "Software Engineer",
+    "DevOps Engineer",
+    "Java Developer",
+    "Full Stack Developer",
+    "Cloud Engineer",
+    "Analytics Engineer",
+}
 class Retriever:
 
     def __init__(self, embedding_model):
@@ -83,6 +102,7 @@ class Retriever:
         self.experience_candidate_ids = []
         self.experience_documents = []
         self.experience_metadata = []
+        self.experience_titles = []
 
         # ----------------------------------
         # Collect every experience
@@ -111,6 +131,7 @@ class Retriever:
                         "is_current": experience.is_current
                     }
                 )
+                self.experience_titles.append(experience.title)
 
         # ----------------------------------
         # Generate embeddings
@@ -138,6 +159,7 @@ class Retriever:
             query,
             normalize_embeddings=True
         )
+        
 
         # -----------------------------
         # Similarity with ALL experiences
@@ -157,6 +179,17 @@ class Retriever:
 
             candidate_id = self.experience_candidate_ids[idx]
             score = float(scores[idx])
+
+            title = self.experience_titles[idx]
+
+            if title in HIGH_PRIORITY_TITLES:
+                title_prior = 1.0
+            elif title in MEDIUM_PRIORITY_TITLES:
+                title_prior = 0.60
+            else:
+                title_prior = 0.20
+
+            score *= title_prior
 
             # Keep BEST experience only
             if (

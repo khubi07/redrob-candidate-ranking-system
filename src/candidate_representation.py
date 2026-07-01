@@ -41,22 +41,23 @@ class Candidate:
 
     evidence_document_embedding: Any = None
 
-STRONG_VERBS = [
+ACTION_VERBS = {
     "built",
     "implemented",
     "designed",
     "developed",
-    "deployed",
-    "optimized",
-    "trained",
     "created",
-    "led",
-    "migrated",
+    "trained",
+    "optimized",
+    "deployed",
     "engineered",
     "integrated",
+    "fine-tuned",
     "improved",
+    "architected",
+    "migrated",
     "owned",
-]
+}
 
 WEAK_PHRASES = [
     "interested in",
@@ -70,37 +71,25 @@ WEAK_PHRASES = [
 ]
 
 JD_RELEVANT_SKILLS = {
-    "retrieval",
-    "ranking",
-    "recommendation",
-    "search",
-
-    "embeddings",
-    "embedding",
-
-    "faiss",
-    "pinecone",
-    "milvus",
-    "weaviate",
-    "vector database",
-    "vector databases",
-
-    "bm25",
-    "rag",
-
-    "llm",
-    "llms",
-    "transformers",
-
-    "fine-tuning",
-    "lora",
-    "qlora",
-    "peft",
-
     "python",
-
+    "machine learning",
+    "deep learning",
+    "nlp",
+    "llms",
+    "rag",
+    "faiss",
+    "recommendation systems",
+    "retrieval",
+    "bm25",
+    "embeddings",
+    "vector databases",
+    "search",
+    "ranking",
+    "transformers",
     "pytorch",
-    "tensorflow"
+    "tensorflow",
+    "xgboost",
+    "lightgbm",
 }
 
 def extract_skills(candidate_json):
@@ -156,19 +145,15 @@ def create_retrieval_document(candidate_json: dict) -> str:
         name = skill.get("name", "")
         lower = name.lower()
 
-        if any(
-            keyword in lower
-            for keyword in JD_RELEVANT_SKILLS
-        ):
+        if lower in JD_RELEVANT_SKILLS:
             relevant_skills.append(name)
+
+    relevant_skills = sorted(set(relevant_skills))
 
     if relevant_skills:
         sections.append(
             "Skills: " + ", ".join(relevant_skills)
         )
-
-
-    
 
     return "\n".join(sections)
 
@@ -199,14 +184,48 @@ def create_evidence_document(candidate_json: dict) -> str:
 
     return "\n\n".join(parts)
 
+import re
+def extract_capability_text(
+    title: str,
+    description: str,
+) -> str:
+    """
+    Keep only sentences that describe
+    technical engineering work.
+    """
+
+    sentences = re.split(
+        r'(?<=[.!?])\s+',
+        description
+    )
+
+    kept = []
+
+    for sentence in sentences:
+
+        s = sentence.lower()
+
+        has_action = any(
+            verb in s
+            for verb in ACTION_VERBS
+        )
+
+        if has_action:
+            kept.append(sentence.strip())
+
+    return (
+            title + ".\n" +
+            "\n".join(kept)
+        )
+
 def extract_experiences(candidate_json):
 
     experiences = []
 
     for exp in candidate_json.get("career_history", []):
 
-        title = exp.get("title", "")
-        description = exp.get("description", "")
+        title = exp.get("title") or ""
+        description = exp.get("description") or ""
         experiences.append(
             Experience(
                 company=exp.get("company", ""),
@@ -216,7 +235,10 @@ def extract_experiences(candidate_json):
                 industry=exp.get("industry", ""),
                 company_size=exp.get("company_size", ""),
                 description=description,
-                evidence_text=f"{title}. {description}",
+                evidence_text=extract_capability_text(
+                    title,
+                    description
+                ),
             )
         )
 
