@@ -118,7 +118,7 @@ class Ranker:
         Score how well a candidate's experiences
         satisfy the job requirements.
         """
-
+        matched_experiences = {}
         weighted_score = 0.0
         total_weight = 0.0
 
@@ -129,13 +129,10 @@ class Ranker:
             
         ):
             best_score = 0.0
+            best_experience = None
 
             # Compare against every experience
 
-            document_score = util.cos_sim(
-                    req_embedding,
-                    candidate.document_embedding
-                ).item()
             
             for exp in candidate.experiences:
 
@@ -146,84 +143,32 @@ class Ranker:
 
                 if score > best_score:
                     best_score = score
+                    best_experience = exp
 
-            best_score = max(
-                    best_score,
-                    document_score    
-                )
                                   
             weighted_score += best_score * weight
             total_weight += weight
+
+            matched_experiences[requirement] = {
+                "experience": best_experience,
+                "score": best_score
+            }
 
             print(
                 f"{requirement:25}"
                 f" Weight={weight:.1f}"
                 f" Best={best_score:.3f}"
             )
+        
+        candidate.matched_experiences = matched_experiences
 
         print(
             f"\nFinal Evidence Score = "
             f"{weighted_score / total_weight:.3f}"
         )
+
         return weighted_score / total_weight
-    
-    def _score_evidence_v2(
-        self,
-        job,
-        candidate
-    ):
-        """
-        Score how well a candidate's experiences
-        satisfy the job requirements.
-        """
-
-        weighted_score = 0.0
-        total_weight = 0.0
-
-        # Iterate over each requirement
-        for (requirement, weight), req_embedding in zip(
-            job.requirements.items(),
-            job.requirement_embeddings
             
-        ):
-            best_score = 0.0
-
-            # Compare against every experience
-
-            document_score = util.cos_sim(
-                    req_embedding,
-                    candidate.evidence_embedding
-                ).item()
-            
-            for exp in candidate.experiences:
-
-                score = util.cos_sim(
-                    req_embedding,
-                    exp.evidence_embedding
-                ).item()
-
-                if score > best_score:
-                    best_score = score
-
-            best_score = max(
-                    best_score,
-                    document_score    
-                )
-                                  
-            weighted_score += best_score * weight
-            total_weight += weight
-
-            print(
-                f"{requirement:25}"
-                f" Weight={weight:.1f}"
-                f" Best={best_score:.3f}"
-            )
-
-        print(
-            f"\nFinal Evidence Score = "
-            f"{weighted_score / total_weight:.3f}"
-        )
-        return weighted_score / total_weight
     
     def _score_skills(
         self,
@@ -455,7 +400,7 @@ class Ranker:
         rankings = []
 
         for candidate in candidates:    
-            evidence_score = self._score_evidence_v2(
+            evidence_score = self._score_evidence(
                 job,
                 candidate
             )
