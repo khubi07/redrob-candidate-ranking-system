@@ -169,7 +169,7 @@ class Ranker:
 
         return weighted_score / total_weight
             
-    
+  
     def _score_skills(
         self,
         job,
