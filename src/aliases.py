@@ -12,6 +12,8 @@ SKILL_ALIASES = {
     "search systems": [
         "search",
         "semantic search",
+        "opensearch",
+        "search engine",
         "vector search",
         "enterprise search",
         "elasticsearch",
@@ -30,7 +32,11 @@ SKILL_ALIASES = {
         "recommendation",
         "recommendation engine",
         "recommender system",
-        "personalization"
+        "personalization",
+        "collaborative filtering",
+        "content based",
+        "two tower",
+        "candidate generation",
     ],
 
     "vector databases": [
@@ -47,6 +53,8 @@ SKILL_ALIASES = {
         "embeddings",
         "sentence transformer",
         "sentence transformers",
+        "text embeddings",
+"dense embeddings",
         "bge",
         "e5",
         "vector embedding"
@@ -55,6 +63,11 @@ SKILL_ALIASES = {
     "llms": [
         "llm",
         "llms",
+        "openai",
+"anthropic",
+"groq",
+"huggingface",
+"transformers",
         "large language model",
         "gpt",
         "llama",
@@ -78,6 +91,9 @@ SKILL_ALIASES = {
     ],
 
     "python": [
+        "fastapi",
+"django",
+"flask",
         "python"
     ]
 }

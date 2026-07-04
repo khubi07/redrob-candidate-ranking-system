@@ -329,7 +329,7 @@ class Retriever:
         # -----------------------------
         # Step 2: Semantic Retrieval
         # -----------------------------
-        embedding_results = self._embedding_search(
+        embedding_results = self._experience_embedding_search(
             job.semantic_query,
             top_k=top_k
         )

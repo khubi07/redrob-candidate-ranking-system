@@ -29,6 +29,7 @@ keywords in their profile.
 # 6. Generate recruiter-friendly reasoning for every candidate.
 # ==============================================================
 
+
 from sentence_transformers import util
 import numpy as np
 from aliases import SKILL_ALIASES
@@ -66,11 +67,13 @@ class Ranker:
 
             for exp in candidate.experiences:
 
-                exp.evidence_embedding = (
-                    self.embedding_model.encode(
-                        exp.evidence_text,
-                        convert_to_tensor=True
-                    )
+                if not exp.evidence_text:
+                    exp.evidence_embedding = None
+                    continue
+
+                exp.evidence_embedding = self.embedding_model.encode(
+                    exp.evidence_text,
+                    convert_to_tensor=True
                 )
 
     def build_document_embeddings(
@@ -136,6 +139,9 @@ class Ranker:
             
             for exp in candidate.experiences:
 
+                if exp.evidence_embedding is None:
+                    continue
+
                 score = util.cos_sim(
                     req_embedding,
                     exp.evidence_embedding
@@ -146,8 +152,14 @@ class Ranker:
                     best_experience = exp
 
                                   
-            weighted_score += best_score * weight
-            total_weight += weight
+            SIMILARITY_FLOOR = 0.13
+
+            adjusted_score = max(
+                0.0,
+                best_score - SIMILARITY_FLOOR
+            )
+
+            weighted_score += adjusted_score * weight
 
             matched_experiences[requirement] = {
                 "experience": best_experience,
@@ -169,7 +181,29 @@ class Ranker:
 
         return weighted_score / total_weight
             
-  
+    def generate_reasoning(
+        self,
+        candidate
+    ):
+
+        reasons = []
+
+        for requirement, info in candidate.matched_experiences.items():
+
+            exp = info["experience"]
+
+            if exp is None:
+                continue
+
+            if info["score"] < 0.30:
+                continue
+
+            reasons.append(
+                f"{requirement}: {exp.title} at {exp.company}"
+            )
+
+        return "; ".join(reasons[:4])
+
     def _score_skills(
         self,
         job,
@@ -366,6 +400,8 @@ class Ranker:
                 + EXPERIENCE_WEIGHT * experience_score
                 + BEHAVIOR_WEIGHT * behavior_score
             )
+
+            reasoning = self.generate_reasoning(candidate)
             if evidence_score < 0.15:
                 final_score *= 0.70
          
@@ -377,7 +413,8 @@ class Ranker:
                     "evidence_score": evidence_score,
                     "skill_score": skill_score,
                     "experience_score": experience_score,
-                    "behavior_score": behavior_score
+                    "behavior_score": behavior_score,
+                    "reasoning": reasoning,
                 }
             )     
 
@@ -387,67 +424,67 @@ class Ranker:
         )
         return rankings    
     
-    def rank_candidates_v2(
-        self,
-        job,
-        candidates
-    ):
-        """
-        Compute final ranking score for
-        every candidate.
-        """
+    # def rank_candidates_v2(
+    #     self,
+    #     job,
+    #     candidates
+    # ):
+    #     """
+    #     Compute final ranking score for
+    #     every candidate.
+    #     """
 
-        rankings = []
+    #     rankings = []
 
-        for candidate in candidates:    
-            evidence_score = self._score_evidence(
-                job,
-                candidate
-            )
+    #     for candidate in candidates:    
+    #         evidence_score = self._score_evidence(
+    #             job,
+    #             candidate
+    #         )
 
-            skill_score = self._score_skills(
-                job,
-                candidate
-            )
+    #         skill_score = self._score_skills(
+    #             job,
+    #             candidate
+    #         )
 
-            experience_score = self._score_experience(
-                job,
-                candidate
-            )
+    #         experience_score = self._score_experience(
+    #             job,
+    #             candidate
+    #         )
 
-            behavior_score = self._score_behavior(
-                candidate
-            )
+    #         behavior_score = self._score_behavior(
+    #             candidate
+    #         )
 
-            EVIDENCE_WEIGHT = 0.60
-            SKILL_WEIGHT = 0.15
-            EXPERIENCE_WEIGHT = 0.10
-            BEHAVIOR_WEIGHT = 0.15
+    #         EVIDENCE_WEIGHT = 0.60
+    #         SKILL_WEIGHT = 0.15
+    #         EXPERIENCE_WEIGHT = 0.10
+    #         BEHAVIOR_WEIGHT = 0.15
 
 
-            final_score = (
-                EVIDENCE_WEIGHT * evidence_score
-                + SKILL_WEIGHT * skill_score
-                + EXPERIENCE_WEIGHT * experience_score
-                + BEHAVIOR_WEIGHT * behavior_score
-            )
-            if evidence_score < 0.15:
-                final_score *= 0.70
+    #         final_score = (
+    #             EVIDENCE_WEIGHT * evidence_score
+    #             + SKILL_WEIGHT * skill_score
+    #             + EXPERIENCE_WEIGHT * experience_score
+    #             + BEHAVIOR_WEIGHT * behavior_score
+    #         )
+    #         if evidence_score < 0.15:
+    #             final_score *= 0.70
          
-            rankings.append(
-                {
-                    "candidate": candidate,
-                    "candidate_id": candidate.candidate_id,
-                    "final_score": final_score,
-                    "evidence_score": evidence_score,
-                    "skill_score": skill_score,
-                    "experience_score": experience_score,
-                    "behavior_score": behavior_score
-                }
-            )     
+    #         rankings.append(
+    #             {
+    #                 "candidate": candidate,
+    #                 "candidate_id": candidate.candidate_id,
+    #                 "final_score": final_score,
+    #                 "evidence_score": evidence_score,
+    #                 "skill_score": skill_score,
+    #                 "experience_score": experience_score,
+    #                 "behavior_score": behavior_score
+    #             }
+    #         )     
 
-        rankings.sort(
-            key=lambda ranking: ranking["final_score"],
-            reverse=True
-        )
-        return rankings    
+    #     rankings.sort(
+    #         key=lambda ranking: ranking["final_score"],
+    #         reverse=True
+    #     )
+    #     return rankings    

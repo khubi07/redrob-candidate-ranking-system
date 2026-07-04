@@ -92,6 +92,47 @@ JD_RELEVANT_SKILLS = {
     "lightgbm",
 }
 
+TECH_TERMS = {
+    "model",
+    "models",
+    "pipeline",
+    "pipelines",
+    "api",
+    "apis",
+    "python",
+    "ml",
+    "machine learning",
+    "deep learning",
+    "ai",
+    "llm",
+    "embedding",
+    "embeddings",
+    "retrieval",
+    "search",
+    "ranking",
+    "recommendation",
+    "feature",
+    "features",
+    "training",
+    "inference",
+    "deploy",
+    "deployment",
+    "kafka",
+    "spark",
+    "docker",
+    "kubernetes",
+    "sql",
+    "vector",
+    "faiss",
+    "bm25",
+    "elasticsearch",
+    "fastapi",
+    "django",
+    "transformer",
+    "pytorch",
+    "tensorflow",
+}
+
 def extract_skills(candidate_json):
 
     skills = []
@@ -184,8 +225,9 @@ def create_evidence_document(candidate_json: dict) -> str:
 
     return "\n\n".join(parts)
 
-import re
+
 def extract_capability_text(
+    candidate_id: str,
     title: str,
     description: str,
 ) -> str:
@@ -193,7 +235,7 @@ def extract_capability_text(
     Keep only sentences that describe
     technical engineering work.
     """
-
+    import re
     sentences = re.split(
         r'(?<=[.!?])\s+',
         description
@@ -210,13 +252,35 @@ def extract_capability_text(
             for verb in ACTION_VERBS
         )
 
-        if has_action:
+        import re
+
+        has_tech = any(
+            re.search(rf"\b{re.escape(term)}\b", s)
+            for term in TECH_TERMS
+        )
+
+        matched_terms = [
+            term
+            for term in TECH_TERMS
+            if re.search(rf"\b{re.escape(term)}\b", s)
+        ]
+
+        # if candidate_id == "CAND_0000083":
+        #     print("=" * 60)
+        #     print(sentence)
+        #     print("Action:", has_action)
+        #     print("Matched TECH_TERMS:", matched_terms)
+
+        if has_action and has_tech:
             kept.append(sentence.strip())
+            
+    if not kept:
+        return ""
 
     return (
-            title + ".\n" +
-            "\n".join(kept)
-        )
+        title + ".\n" +
+        "\n".join(kept)
+    )
 
 def extract_experiences(candidate_json):
 
@@ -236,6 +300,7 @@ def extract_experiences(candidate_json):
                 company_size=exp.get("company_size", ""),
                 description=description,
                 evidence_text=extract_capability_text(
+                    candidate_json["candidate_id"],
                     title,
                     description
                 ),
