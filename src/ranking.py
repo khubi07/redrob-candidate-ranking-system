@@ -131,6 +131,7 @@ class Ranker:
             job.requirement_embeddings
             
         ):
+            print("Entered _score_evidence")
             best_score = 0.0
             best_experience = None
 
@@ -161,6 +162,8 @@ class Ranker:
 
             weighted_score += adjusted_score * weight
 
+            total_weight += weight
+
             matched_experiences[requirement] = {
                 "experience": best_experience,
                 "score": best_score
@@ -178,7 +181,7 @@ class Ranker:
             f"\nFinal Evidence Score = "
             f"{weighted_score / total_weight:.3f}"
         )
-
+        print("TOTAL WEIGHT =", total_weight)
         return weighted_score / total_weight
             
     def generate_reasoning(
@@ -373,6 +376,9 @@ class Ranker:
                 job,
                 candidate
             )
+
+            if evidence_score < 0.01:
+                continue
 
             skill_score = self._score_skills(
                 job,
