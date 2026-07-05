@@ -58,7 +58,10 @@ class Retriever:
         self.experience_metadata = []
 
     def build_bm25_index(self, candidates):
-
+        self.candidate_lookup = {
+        c.candidate_id: c
+        for c in candidates
+    }
         # BM25 expects tokenized documents
         corpus = []
 
@@ -235,7 +238,7 @@ class Retriever:
             (self.candidate_ids[i], float(scores[i]))
             for i in top_idx
         ]   
-    
+
     def _embedding_search(
         self,
         query,
@@ -325,6 +328,7 @@ class Retriever:
             job.document,
             top_k=top_k
         )
+        self.last_bm25_results = bm25_results
 
         # -----------------------------
         # Step 2: Semantic Retrieval
@@ -333,6 +337,7 @@ class Retriever:
             job.semantic_query,
             top_k=top_k
         )
+        self.last_embedding_results = embedding_results
 
         # -----------------------------
         # Step 3: Hybrid Fusion
@@ -341,5 +346,94 @@ class Retriever:
             bm25_results,
             embedding_results
         )
+        self.last_rrf_results = final_results
 
         return final_results[:top_k]
+    
+    def inspect_candidate(
+        self,
+        candidate_id,
+    ):
+        """
+        Inspect why a candidate was retrieved.
+        """
+
+        print("=" * 60)
+        print(f"Candidate: {candidate_id}")
+
+        # -------------------------
+        # BM25
+        # -------------------------
+        bm25_rank = None
+        bm25_score = None
+
+        for rank, (cid, score) in enumerate(
+            self.last_bm25_results,
+            start=1
+        ):
+            if cid == candidate_id:
+                bm25_rank = rank
+                bm25_score = score
+                break
+
+        print("\nBM25")
+        print("-----")
+        print("Rank :", bm25_rank)
+        print("Score:", bm25_score)
+
+        # -------------------------
+        # Embedding
+        # -------------------------
+        emb_rank = None
+        emb_score = None
+
+        for rank, (cid, score) in enumerate(
+            self.last_embedding_results,
+            start=1
+        ):
+            if cid == candidate_id:
+                emb_rank = rank
+                emb_score = score
+                break
+
+        print("\nEmbedding")
+        print("---------")
+        print("Rank :", emb_rank)
+        print("Score:", emb_score)
+
+        # -------------------------
+        # RRF
+        # -------------------------
+        rrf_score = None
+
+        for cid, score in self.last_rrf_results:
+            if cid == candidate_id:
+                rrf_score = score
+                break
+
+        print("\nRRF")
+        print("---")
+        print(rrf_score)
+
+        print("=" * 60)
+
+        print("\nExperience Evidence")
+        print("-------------------")
+
+        experiences = [
+            (meta, doc)
+            for cid, meta, doc in zip(
+                self.experience_candidate_ids,
+                self.experience_metadata,
+                self.experience_documents,
+            )
+            if cid == candidate_id
+        ]
+
+        if not experiences:
+            print("No experience evidence found.")
+            return
+
+        for i, (meta, document) in enumerate(experiences, start=1):
+            print(f"\n[{i}] {meta['title']}")
+            print(document)
