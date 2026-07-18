@@ -1,17 +1,26 @@
 from pydantic import ValidationError
-
 from src.llm.schemas import CandidateAnalysis
 from src.llm.exceptions import LLMParsingError
 
+    
+def clean_response(response: str) -> str:
+    """
+    Removes markdown formatting that the LLM may add.
+    """
+
+    response = response.strip()
+
+    response = response.replace("```json", "")
+    response = response.replace("```", "")
+
+    return response.strip()
 
 def parse_analysis(response: str) -> CandidateAnalysis:
 
-    try:
+    response = clean_response(response)
 
+    try:
         return CandidateAnalysis.model_validate_json(response)
 
     except ValidationError as e:
-
-        raise LLMParsingError(
-            f"Invalid JSON returned by LLM.\n{e}"
-        )
+        raise LLMParsingError(str(e))

@@ -3,7 +3,7 @@ from src.llm.prompts import (
     SYSTEM_PROMPT,
     build_candidate_prompt
 )
-from src.llm.parser import parse_analysis
+from src.llm.parser import parse_analysis, LLMParsingError
 from src.llm.schemas import (
     CandidateContext,
     CandidateAnalysis
@@ -17,18 +17,29 @@ class CandidateEvaluator:
         self.llm = LLMEngine()
 
 
-    def evaluate(
-        self,
-        context: CandidateContext
-    ) -> CandidateAnalysis:
+    def evaluate(self, context):
 
         user_prompt = build_candidate_prompt(context)
 
-        response = self.llm.generate(
-            system_prompt=SYSTEM_PROMPT,
-            user_prompt=user_prompt
+        for attempt in range(2):
+
+            try:
+
+                response = self.llm.generate(
+                    SYSTEM_PROMPT,
+                    user_prompt
+                )
+
+                return parse_analysis(response)
+
+            except LLMParsingError:
+
+                print(
+                    f"Attempt {attempt+1} failed."
+                )
+
+        raise LLMParsingError(
+            "Unable to parse LLM response."
         )
-
-        analysis = parse_analysis(response)
-
-        return analysis
+    
+    
