@@ -1,22 +1,51 @@
-from ollama import chat
-from src.config import OLLAMA_MODEL
+from ollama import Client
+
+from src.config import (
+    OLLAMA_HOST,
+    OLLAMA_MODEL,
+    OLLAMA_TEMPERATURE,
+)
 
 
 class LLMEngine:
 
     def __init__(self):
+
+        self.client = Client(host=OLLAMA_HOST)
+
         self.model = OLLAMA_MODEL
 
-    def chat(self, prompt: str) -> str:
+        self.temperature = OLLAMA_TEMPERATURE
 
-        response = chat(
+
+    def generate(
+        self,
+        system_prompt: str,
+        user_prompt: str
+    ) -> str:
+
+        response = self.client.chat(
+
             model=self.model,
+
             messages=[
+
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
+
                 {
                     "role": "user",
-                    "content": prompt
+                    "content": user_prompt
                 }
-            ]
+
+            ],
+
+            options={
+                "temperature": self.temperature
+            }
+
         )
 
-        return response.message.content or ""
+        return response["message"]["content"]
