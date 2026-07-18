@@ -326,6 +326,7 @@ def create_metadata(candidate_json: dict):
             "years_of_experience",
             0.0
         ),
+        "headline": profile.get("headline", "")
     }
 
 def build_candidate(candidate_json: dict) -> Candidate:

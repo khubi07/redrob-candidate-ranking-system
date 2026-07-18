@@ -407,10 +407,11 @@ class Ranker:
                 + BEHAVIOR_WEIGHT * behavior_score
             )
 
-            reasoning = self.generate_reasoning(candidate)
-            if evidence_score < 0.15:
-                final_score *= 0.70
+            # reasoning = self.generate_reasoning(candidate)
+            # if evidence_score < 0.15:
+            #     final_score *= 0.70
          
+            analysis = None
             rankings.append(
                 {
                     "candidate": candidate,
@@ -420,7 +421,7 @@ class Ranker:
                     "skill_score": skill_score,
                     "experience_score": experience_score,
                     "behavior_score": behavior_score,
-                    "reasoning": reasoning,
+                    "analysis": analysis,
                 }
             )     
 
@@ -430,67 +431,4 @@ class Ranker:
         )
         return rankings    
     
-    # def rank_candidates_v2(
-    #     self,
-    #     job,
-    #     candidates
-    # ):
-    #     """
-    #     Compute final ranking score for
-    #     every candidate.
-    #     """
-
-    #     rankings = []
-
-    #     for candidate in candidates:    
-    #         evidence_score = self._score_evidence(
-    #             job,
-    #             candidate
-    #         )
-
-    #         skill_score = self._score_skills(
-    #             job,
-    #             candidate
-    #         )
-
-    #         experience_score = self._score_experience(
-    #             job,
-    #             candidate
-    #         )
-
-    #         behavior_score = self._score_behavior(
-    #             candidate
-    #         )
-
-    #         EVIDENCE_WEIGHT = 0.60
-    #         SKILL_WEIGHT = 0.15
-    #         EXPERIENCE_WEIGHT = 0.10
-    #         BEHAVIOR_WEIGHT = 0.15
-
-
-    #         final_score = (
-    #             EVIDENCE_WEIGHT * evidence_score
-    #             + SKILL_WEIGHT * skill_score
-    #             + EXPERIENCE_WEIGHT * experience_score
-    #             + BEHAVIOR_WEIGHT * behavior_score
-    #         )
-    #         if evidence_score < 0.15:
-    #             final_score *= 0.70
-         
-    #         rankings.append(
-    #             {
-    #                 "candidate": candidate,
-    #                 "candidate_id": candidate.candidate_id,
-    #                 "final_score": final_score,
-    #                 "evidence_score": evidence_score,
-    #                 "skill_score": skill_score,
-    #                 "experience_score": experience_score,
-    #                 "behavior_score": behavior_score
-    #             }
-    #         )     
-
-    #     rankings.sort(
-    #         key=lambda ranking: ranking["final_score"],
-    #         reverse=True
-    #     )
-    #     return rankings    
+   

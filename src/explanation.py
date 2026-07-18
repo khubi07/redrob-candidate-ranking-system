@@ -135,37 +135,37 @@ class ExplanationGenerator:
 
         return ""
             
-    def generate_reasoning(
-        self,
-        job,
-        candidate,
-        ranking
-    ):
+    # def generate_reasoning(
+    #     self,
+    #     job,
+    #     candidate,
+    #     ranking
+    # ):
 
-        parts = [
-            self._evidence_reason(
-                job,
-                candidate,
-                ranking
-            ),
+    #     parts = [
+    #         self._evidence_reason(
+    #             job,
+    #             candidate,
+    #             ranking
+    #         ),
 
-            self._skill_reason(
-                job,
-                candidate,
-                ranking
-            ),
+    #         self._skill_reason(
+    #             job,
+    #             candidate,
+    #             ranking
+    #         ),
 
-            self._experience_reason(
-                candidate
-            ),
+    #         self._experience_reason(
+    #             candidate
+    #         ),
 
-            self._behavior_reason(
-                candidate
-            )
-        ]
+    #         self._behavior_reason(
+    #             candidate
+    #         )
+    #     ]
 
-        return " ".join(
-            part
-            for part in parts
-            if part
-        )
+    #     return " ".join(
+    #         part
+    #         for part in parts
+    #         if part
+    #     )
