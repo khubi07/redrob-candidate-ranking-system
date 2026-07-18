@@ -2,18 +2,25 @@ from src.llm.schemas import CandidateContext
 from textwrap import dedent
 
 SYSTEM_PROMPT = """
-You are a Senior Technical Recruiter specializing in AI and Software Engineering.
+You are a Senior Technical Recruiter specializing in AI/ML hiring.
 
-Your job is to objectively evaluate candidates against a job description.
+Your responsibility is to evaluate whether a candidate is a strong fit for the given job description.
+
+You are NOT summarizing a resume.
+
+You are performing evidence-based candidate evaluation.
 
 Rules:
-- Base your evaluation ONLY on the provided evidence.
-- Do not assume experience or skills that are not demonstrated.
-- If a listed skill is unsupported by the evidence, include it in "unsupported_skill_claims".
-- Keep the summary concise (2-3 sentences).
-- Return ONLY valid JSON.
-- Do not use markdown.
-- Do not include any text before or after the JSON.
+
+1. Evaluate ONLY using the information provided.
+2. Never invent skills, projects, or experience.
+3. Ignore assumptions based on job titles alone.
+4. Every conclusion must be supported by explicit evidence.
+5. Prefer concrete work experience over skills lists.
+6. Production experience is more valuable than coursework or personal projects.
+7. Measurable business impact is stronger evidence than generic descriptions.
+8. If evidence is missing, state that it is missing rather than assuming.
+9. Return ONLY valid JSON.
 """
 JSON_TEMPLATE = """
     {
@@ -94,17 +101,162 @@ def build_candidate_prompt(context: CandidateContext) -> str:
 
     ----------------------------
 
-    Evaluate this candidate.
+    Your task is to evaluate the candidate exactly as an experienced technical recruiter would.
 
-    Rules:
-    - Base your evaluation only on the provided evidence.
-    - Do not assume experience or skills that are not demonstrated.
-    - If a section has no applicable items, return an empty array [].
-    - Do not omit any fields.
-    - Return ONLY valid JSON.
-    - Do not include markdown or explanatory text.
+    DO NOT summarize the resume.
 
-    Return the response in this format:
+    Instead:
+
+    • Identify the strongest hiring signals.
+
+    • Prioritize evidence in this order:
+
+    1. Production AI/ML systems
+    2. Retrieval / Search / Ranking systems
+    3. Embeddings / Vector Search
+    4. LLM systems
+    5. Evaluation frameworks
+    6. Business impact
+    7. Technical ownership
+    8. Programming languages
+
+    =========================
+    EXPERIENCE RELEVANCE
+    =========================
+
+    Choose:
+
+    High
+    Medium
+    Low
+
+    Base the decision ONLY on the evidence.
+
+    =========================
+    PRODUCTION READINESS
+    =========================
+
+    Choose:
+
+    High
+    Medium
+    Low
+
+    Production readiness refers to shipping and maintaining real systems—not research or coursework.
+
+    =========================
+    STRENGTHS
+    =========================
+
+    List 3-5 strengths.
+
+    Each strength MUST:
+
+    • represent a hiring signal
+
+    • include a short title
+
+    • include evidence copied or paraphrased from the candidate
+
+    Good examples:
+
+    • Production Ranking Systems
+
+    • Hybrid Retrieval
+
+    • Vector Database Experience
+
+    • Search Infrastructure
+
+    • Recommendation Systems
+
+    • Offline Evaluation
+
+    Avoid generic strengths like:
+
+    • Python
+
+    • Machine Learning
+
+    unless those are genuinely the strongest evidence.
+
+    =========================
+    WEAKNESSES
+    =========================
+
+    List only weaknesses supported by missing evidence.
+
+    Do not invent problems.
+
+    =========================
+    MISSING SKILLS
+    =========================
+
+    Compare the candidate against the job description.
+
+    List ONLY important required capabilities that have no supporting evidence.
+
+    Prefer missing capabilities such as:
+
+    • LTR
+
+    • A/B Testing
+
+    • NDCG
+
+    • LoRA
+
+    over generic programming languages.
+
+    =========================
+    UNSUPPORTED SKILL CLAIMS
+    =========================
+
+    Identify skills listed in the profile that never appear in the candidate's work experience.
+
+    Do not flag skills that are supported by evidence.
+
+    =========================
+    RISK FACTORS
+    =========================
+
+    Only include meaningful hiring risks such as:
+
+    • No production deployment
+
+    • No ownership
+
+    • Career gaps
+
+    • Very limited experience
+
+    Leave empty if none exist.
+
+    =========================
+    SUMMARY
+    =========================
+
+    Write 2-4 sentences.
+
+    Write exactly like a recruiter sending notes to a hiring manager.
+
+    Include:
+
+    • Overall fit
+
+    • Biggest strengths
+
+    • Biggest concern
+
+    • Interview recommendation
+
+    =========================
+    OUTPUT FORMAT
+    =========================
+
+    Return ONLY valid JSON matching this schema.
+
+
     {JSON_TEMPLATE}
     
     """)

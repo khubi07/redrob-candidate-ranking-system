@@ -28,10 +28,9 @@ class Rating(str, Enum):
     LOW = "Low"
 
 class EvidenceItem(BaseModel):
-
     title: str
-
     evidence: str
+    importance: Rating
 
 class CandidateAnalysis(BaseModel):
 

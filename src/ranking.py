@@ -33,12 +33,15 @@ keywords in their profile.
 from sentence_transformers import util
 import numpy as np
 from aliases import SKILL_ALIASES
+from src.llm.context_builder import build_candidate_context
+from src.llm.evaluator import CandidateEvaluator
 
 class Ranker:
 
     def __init__(self, embedding_model):
 
         self.embedding_model = embedding_model
+        self.evaluator = CandidateEvaluator()
 
     def build_requirement_embeddings(
         self,
@@ -411,7 +414,19 @@ class Ranker:
             # if evidence_score < 0.15:
             #     final_score *= 0.70
          
-            analysis = None
+            ranking = {
+                "evidence_score": evidence_score,
+                "skill_score": skill_score,
+                "experience_score": experience_score,
+            }
+
+            context = build_candidate_context(
+                job,
+                candidate,
+                ranking
+            )
+
+            analysis = self.evaluator.evaluate(context)
             rankings.append(
                 {
                     "candidate": candidate,
