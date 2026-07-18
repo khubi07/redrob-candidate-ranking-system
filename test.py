@@ -1,41 +1,30 @@
-# test_evaluator.py
-
-from src.llm.evaluator import CandidateEvaluator
+from src.llm.llm_engine import LLMEngine
+from src.llm.prompts import SYSTEM_PROMPT, build_candidate_prompt
 from src.llm.schemas import CandidateContext
+from src.llm.parser import parse_analysis
 
 context = CandidateContext(
-
-    job_description="""
-Looking for an AI Engineer with Python,
-Retrieval, RAG and Machine Learning.
-""",
-
+    job_description="Need Python and Machine Learning",
     candidate_headline="AI Engineer",
-
-    candidate_skills=[
-        "Python",
-        "RAG",
-        "FastAPI",
-        "BM25"
-    ],
-
+    candidate_skills=["Python", "FastAPI"],
     matched_experiences=[
-        "Built an AI recruiter using BM25 and semantic search."
+        "Built an ML model for spam detection."
     ],
-
-    evidence_text="""
-Implemented hybrid retrieval using BM25
-and Sentence Transformers.
-""",
-
-    evidence_score=94,
-
-    skill_score=91,
-
-    experience_score=89
+    evidence_text="Implemented ML pipeline using sklearn.",
+    evidence_score=92,
+    skill_score=85,
+    experience_score=88
 )
-evaluator = CandidateEvaluator()
 
-analysis = evaluator.evaluate(context)
+prompt = build_candidate_prompt(context)
+
+llm = LLMEngine()
+
+response = llm.generate(
+    system_prompt=SYSTEM_PROMPT,
+    user_prompt=prompt
+)
+
+analysis = parse_analysis(response)
 
 print(analysis)
