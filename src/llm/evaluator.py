@@ -29,17 +29,18 @@ class CandidateEvaluator:
                     SYSTEM_PROMPT,
                     user_prompt
                 )
-
+                
                 return parse_analysis(response)
 
-            except LLMParsingError:
+            except LLMParsingError as e:
 
-                print(
-                    f"Attempt {attempt+1} failed."
-                )
+                print(f"Attempt {attempt+1} failed.")
+                print(e)
 
-        raise LLMParsingError(
-            "Unable to parse LLM response."
-        )
-    
+            
+
+            raise LLMParsingError(
+                "Unable to parse LLM response."
+            )
+                
     

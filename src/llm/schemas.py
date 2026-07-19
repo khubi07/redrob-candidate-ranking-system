@@ -30,7 +30,7 @@ class Rating(str, Enum):
 class EvidenceItem(BaseModel):
     title: str
     evidence: str
-    importance: Rating
+    
 
 class CandidateAnalysis(BaseModel):
 
