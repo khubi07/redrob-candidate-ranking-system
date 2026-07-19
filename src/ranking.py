@@ -373,6 +373,10 @@ class Ranker:
         """
 
         rankings = []
+        EVIDENCE_WEIGHT = 0.60
+        SKILL_WEIGHT = 0.15
+        EXPERIENCE_WEIGHT = 0.10
+        BEHAVIOR_WEIGHT = 0.15
 
         for candidate in candidates:    
             evidence_score = self._score_evidence(
@@ -397,10 +401,7 @@ class Ranker:
                 candidate
             )
 
-            EVIDENCE_WEIGHT = 0.60
-            SKILL_WEIGHT = 0.15
-            EXPERIENCE_WEIGHT = 0.10
-            BEHAVIOR_WEIGHT = 0.15
+            
 
 
             final_score = (
@@ -414,19 +415,9 @@ class Ranker:
             # if evidence_score < 0.15:
             #     final_score *= 0.70
          
-            ranking = {
-                "evidence_score": evidence_score,
-                "skill_score": skill_score,
-                "experience_score": experience_score,
-            }
+            
 
-            context = build_candidate_context(
-                job,
-                candidate,
-                ranking
-            )
-
-            analysis = self.evaluator.evaluate(context)
+            
             rankings.append(
                 {
                     "candidate": candidate,
@@ -436,7 +427,7 @@ class Ranker:
                     "skill_score": skill_score,
                     "experience_score": experience_score,
                     "behavior_score": behavior_score,
-                    "analysis": analysis,
+                    "analysis": None,
                 }
             )     
 
@@ -444,6 +435,17 @@ class Ranker:
             key=lambda ranking: ranking["final_score"],
             reverse=True
         )
+        TOP_K_LLM = 20
+
+        for ranking in rankings[:TOP_K_LLM]:
+
+            context = build_candidate_context(
+                job,
+                ranking["candidate"],
+                ranking
+            )
+
+            ranking["analysis"] = self.evaluator.evaluate(context)
         return rankings    
     
    
