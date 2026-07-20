@@ -314,7 +314,7 @@ class Retriever:
     def retrieve_candidates(
         self,
         job,
-        top_k=500
+        top_k=5
     ):
         """
         Retrieve the most relevant candidates using
@@ -349,8 +349,10 @@ class Retriever:
         )
         self.last_rrf_results = final_results
 
-        return final_results[:top_k]
-    
+        return [
+            self.candidate_lookup[candidate_id]
+            for candidate_id, _ in final_results[:top_k]
+        ]
     def inspect_candidate(
         self,
         candidate_id,

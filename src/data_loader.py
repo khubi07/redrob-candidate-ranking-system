@@ -1,6 +1,6 @@
 import json
 
-from candidate_representation import build_candidate
+from src.candidate_representation import build_candidate
 
 def load_candidates(file_path: str, limit=None):
 

@@ -32,7 +32,7 @@ keywords in their profile.
 
 from sentence_transformers import util
 import numpy as np
-from aliases import SKILL_ALIASES
+from src.aliases import SKILL_ALIASES
 from src.llm.context_builder import build_candidate_context
 from src.llm.evaluator import CandidateEvaluator
 
@@ -134,7 +134,7 @@ class Ranker:
             job.requirement_embeddings
             
         ):
-            print("Entered _score_evidence")
+            # print("Entered _score_evidence")
             best_score = 0.0
             best_experience = None
 
@@ -156,14 +156,14 @@ class Ranker:
                     best_experience = exp
 
                                   
-            SIMILARITY_FLOOR = 0.13
+            # SIMILARITY_FLOOR = 0.13
 
-            adjusted_score = max(
-                0.0,
-                best_score - SIMILARITY_FLOOR
-            )
+            # adjusted_score = max(
+            #     0.0,
+            #     best_score - SIMILARITY_FLOOR
+            # )
 
-            weighted_score += adjusted_score * weight
+            weighted_score += best_score * weight
 
             total_weight += weight
 
@@ -172,11 +172,11 @@ class Ranker:
                 "score": best_score
             }
 
-            print(
-                f"{requirement:25}"
-                f" Weight={weight:.1f}"
-                f" Best={best_score:.3f}"
-            )
+            # print(
+            #     f"{requirement:25}"
+            #     f" Weight={weight:.1f}"
+            #     f" Best={best_score:.3f}"
+            # )
         
         candidate.matched_experiences = matched_experiences
 

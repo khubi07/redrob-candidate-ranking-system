@@ -1,4 +1,4 @@
-from aliases import SKILL_ALIASES
+from src.aliases import SKILL_ALIASES
 
 
 class ExplanationGenerator:

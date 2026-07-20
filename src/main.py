@@ -4,10 +4,10 @@ from pathlib import Path
 from sentence_transformers import SentenceTransformer
 from docx import Document
 
-from data_loader import load_candidates
-from job_representation import build_job_description
-from retrieval import Retriever
-from ranking import Ranker
+from src.data_loader import load_candidates
+from src.job_representation import build_job_description
+from src.retrieval import Retriever
+from src.ranking import Ranker
 
 
 # =====================================================
@@ -16,9 +16,14 @@ from ranking import Ranker
 
 MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 
-CANDIDATES_PATH = Path("../data/sample_candidates.jsonl")
-JOB_DESCRIPTION_PATH = Path("../India_Runs_Hackathon/job_description.docx")
+BASE_DIR = Path(__file__).resolve().parent.parent
 
+CANDIDATES_PATH = BASE_DIR / "data" / "candidates.jsonl"
+JOB_DESCRIPTION_PATH = (
+    BASE_DIR 
+    / "India_Runs_Hackathon"
+    / "job_description.docx"
+)
 TOP_K_RESULTS = 10
 
 
@@ -63,7 +68,10 @@ def main():
 
     print("Loading candidates...")
 
-    candidates = load_candidates(str(CANDIDATES_PATH))
+    candidates = load_candidates(
+        str(CANDIDATES_PATH),
+        limit=100
+        ) #converted path -> str
 
     print(f"Loaded {len(candidates)} candidates.")
 
