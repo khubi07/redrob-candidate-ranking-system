@@ -1,0 +1,21 @@
+# AI / Machine Learning
+sentence-transformers==5.6.0
+transformers==5.12.1
+torch==2.12.1
+scikit-learn==1.9.0
+numpy==2.4.6
+scipy==1.18.0
+
+# Retrieval
+rank-bm25==0.2.2
+
+# LLM
+ollama==0.6.2
+
+# Data Validation
+pydantic==2.13.4
+
+# Utilities
+python-docx==1.2.0
+tqdm==4.68.2
+pandas==3.0.3
